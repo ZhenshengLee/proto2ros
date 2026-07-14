@@ -47,7 +47,7 @@ function(proto2ros_generate target)
   if(NOT ARG_INCLUDE_OUT_VAR)
     set(ARG_INCLUDE_OUT_VAR ${target}_cpp_include)
   endif()
-  list(APPEND ARG_APPEND_PYTHONPATH "${PROJECT_SOURCE_DIR}")
+  list(APPEND ARG_APPEND_PYTHONPATH "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
   string(REPLACE ";" ":" APPEND_PYTHONPATH "${ARG_APPEND_PYTHONPATH}")
 
   set(BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/proto2ros_generate")
@@ -93,13 +93,17 @@ function(proto2ros_generate target)
     get_executable_path(PROTOC_EXECUTABLE protobuf::protoc CONFIGURE)
     execute_process(
       COMMAND
-        ${PROTOC_EXECUTABLE} ${protoc_options} -o${proto_descriptor} ${proto_files}
+        ${PROTOC_EXECUTABLE} ${protoc_options} "--python_out=${CMAKE_CURRENT_BINARY_DIR}" -o${proto_descriptor} ${proto_files}
       COMMAND_ERROR_IS_FATAL ANY
     )
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/msg" "${CMAKE_CURRENT_BINARY_DIR}/${ARG_PACKAGE_NAME}/msg")
+    file(TOUCH "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/msg/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/${ARG_PACKAGE_NAME}/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/${ARG_PACKAGE_NAME}/msg/__init__.py")
 
     add_custom_command(
       OUTPUT ${proto_descriptor}
-      COMMAND ${PROTOC_EXECUTABLE} ${protoc_options} -o${proto_descriptor} ${proto_files}
+      COMMAND ${PROTOC_EXECUTABLE} ${protoc_options} "--python_out=${CMAKE_CURRENT_BINARY_DIR}" -o${proto_descriptor} ${proto_files}
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/msg" "${CMAKE_CURRENT_BINARY_DIR}/${ARG_PACKAGE_NAME}/msg"
+      COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/msg/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/${ARG_PACKAGE_NAME}/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/${ARG_PACKAGE_NAME}/msg/__init__.py"
       DEPENDS ${proto_files}
       COMMENT "Compile descriptor from .proto files"
       VERBATIM
