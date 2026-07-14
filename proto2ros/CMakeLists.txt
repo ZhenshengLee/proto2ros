@@ -1,5 +1,5 @@
 # Copyright (c) 2023 Robotics and AI Institute LLC dba RAI Institute. All rights reserved.
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.10)
 if(POLICY CMP0148)
   cmake_policy(SET CMP0148 OLD)  # to accommodate rosidl pipeline
 endif()
@@ -63,8 +63,13 @@ target_include_directories(${PROJECT_NAME}_conversions PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 rosidl_get_typesupport_target(${PROJECT_NAME}_cpp_msgs ${PROJECT_NAME} "rosidl_typesupport_cpp")
-target_link_libraries(${PROJECT_NAME}_conversions ${${PROJECT_NAME}_cpp_msgs} protobuf::libprotobuf)
-ament_target_dependencies(${PROJECT_NAME}_conversions builtin_interfaces rclcpp std_msgs)
+target_link_libraries(${PROJECT_NAME}_conversions
+  ${${PROJECT_NAME}_cpp_msgs}
+  protobuf::libprotobuf
+  rclcpp::rclcpp
+  builtin_interfaces::builtin_interfaces
+  std_msgs::std_msgs
+)
 
 find_program(CLANG_TIDY_EXECUTABLE NAMES "clang-tidy" REQUIRED)
 set(CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}"
